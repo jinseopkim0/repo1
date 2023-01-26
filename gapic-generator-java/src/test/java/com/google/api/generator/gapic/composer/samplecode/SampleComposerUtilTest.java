@@ -14,10 +14,12 @@
 
 package com.google.api.generator.gapic.composer.samplecode;
 
+import static com.google.cloud.tools.snippetgen.configlanguage.v1.Type.ScalarType.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import com.google.api.generator.engine.ast.ExprStatement;
+import com.google.api.generator.engine.ast.MethodInvocationExpr;
 import com.google.api.generator.engine.ast.TypeNode;
 import com.google.api.generator.engine.ast.VaporReference;
 import com.google.api.generator.engine.ast.Variable;
@@ -28,6 +30,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import com.google.api.generator.gapic.utils.JavaStyle;
+import com.google.cloud.tools.snippetgen.configlanguage.v1.Expression;
+import com.google.cloud.tools.snippetgen.configlanguage.v1.Statement;
+import com.google.cloud.tools.snippetgen.configlanguage.v1.Type;
 import org.junit.Test;
 
 public class SampleComposerUtilTest {
@@ -145,4 +152,60 @@ public class SampleComposerUtilTest {
     assertTrue(result.contains(echoClientSample));
     assertTrue(result.contains(echoClientSampleDiffRpcName));
   }
+
+  @Test
+  public void testConvertTypeToTypeNode() {
+    assertEquals(SampleComposerUtil.convertScalarTypeToTypeNode(TYPE_BOOL), TypeNode.BOOLEAN);
+    assertEquals(SampleComposerUtil.convertScalarTypeToTypeNode(TYPE_FLOAT), TypeNode.FLOAT);
+    assertEquals(SampleComposerUtil.convertScalarTypeToTypeNode(TYPE_INT64), TypeNode.LONG);
+    assertEquals(SampleComposerUtil.convertScalarTypeToTypeNode(TYPE_FIXED64), TypeNode.LONG);
+    assertEquals(SampleComposerUtil.convertScalarTypeToTypeNode(TYPE_SFIXED64), TypeNode.LONG);
+    assertEquals(SampleComposerUtil.convertScalarTypeToTypeNode(TYPE_SINT64), TypeNode.LONG);
+    assertEquals(SampleComposerUtil.convertScalarTypeToTypeNode(TYPE_UINT64), TypeNode.INT);
+    assertEquals(SampleComposerUtil.convertScalarTypeToTypeNode(TYPE_INT32), TypeNode.INT);
+    assertEquals(SampleComposerUtil.convertScalarTypeToTypeNode(TYPE_FIXED32), TypeNode.INT);
+    assertEquals(SampleComposerUtil.convertScalarTypeToTypeNode(TYPE_SFIXED32), TypeNode.INT);
+    assertEquals(SampleComposerUtil.convertScalarTypeToTypeNode(TYPE_SINT32), TypeNode.INT);
+    assertEquals(SampleComposerUtil.convertScalarTypeToTypeNode(TYPE_STRING), TypeNode.STRING);
+  }
+
+  @Test
+  public void testConvertMessageTypeToReturnType() {
+    String messageType = "google.cloud.speech.v1.CustomClass";
+    assertEquals(SampleComposerUtil.convertTypeToReturnType(messageType), "CustomClass");
+  }
+
+  @Test
+  public void testConvertStandardOutputStatementWithStringValueToStatement() {
+    Expression expression = Expression.newBuilder().setStringValue("potato").build();
+    Statement.StandardOutput standardOutput = Statement.StandardOutput.newBuilder().setValue(expression).build();
+    Statement sampleStatement = Statement.newBuilder().setStandardOutput(standardOutput).build();
+
+    com.google.api.generator.engine.ast.Statement expected = ExprStatement.withExpr(SampleComposerUtil.systemOutPrint("potato"));
+
+    assertEquals(SampleComposerUtil.convertStandardOutputStatementToStatement(sampleStatement), expected);
+  }
+
+  @Test
+  public void testConvertStandardOutputStatementWithNameValueToStatement() {
+    Expression expression = Expression.newBuilder().setNameValue(Expression.NameValue.newBuilder().setName("apple")).build();
+    Statement.StandardOutput standardOutput = Statement.StandardOutput.newBuilder().setValue(expression).build();
+    Statement sampleStatement = Statement.newBuilder().setStandardOutput(standardOutput).build();
+
+    com.google.api.generator.engine.ast.Statement result = ExprStatement.withExpr(SampleComposerUtil.systemOutPrint("apple"));
+
+    assertEquals(SampleComposerUtil.convertStandardOutputStatementToStatement(sampleStatement), result);
+  }
+
+  @Test
+  public void testConvertStandardOutputStatementWithNameValueAndPathToStatement() {
+    Expression expression = Expression.newBuilder().setNameValue(Expression.NameValue.newBuilder().setName("apple").setPath(0,"seed")).build();
+    Statement.StandardOutput standardOutput = Statement.StandardOutput.newBuilder().setValue(expression).build();
+    Statement sampleStatement = Statement.newBuilder().setStandardOutput(standardOutput).build();
+
+    com.google.api.generator.engine.ast.Statement result = ExprStatement.withExpr(SampleComposerUtil.systemOutPrint("apple"));
+
+    assertEquals(SampleComposerUtil.convertStandardOutputStatementToStatement(sampleStatement), result);
+  }
+
 }
