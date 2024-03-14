@@ -72,7 +72,11 @@
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
         <version>${guava.version}</version>
-        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.google.errorprone</groupId>
+        <artifactId>error_prone_annotationsa</artifactId>
+        <version>${errorprone.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
