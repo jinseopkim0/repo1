@@ -61,7 +61,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mockito;
-import org.threeten.bp.Duration;
 
 @RunWith(JUnit4.class)
 public class GrpcCallableFactoryTest {
@@ -106,7 +105,7 @@ public class GrpcCallableFactoryTest {
         ServerStreamingCallSettings.<Color, Money>newBuilder()
             .setRetrySettings(
                 RetrySettings.newBuilder()
-                    .setTotalTimeout(Duration.ofSeconds(1))
+                    .setTotalTimeout(java.time.Duration.ofSeconds(1))
                     .setMaxAttempts(1)
                     .build())
             .build();
@@ -131,7 +130,7 @@ public class GrpcCallableFactoryTest {
             .setRetryableCodes(Code.INVALID_ARGUMENT)
             .setRetrySettings(
                 RetrySettings.newBuilder()
-                    .setTotalTimeout(Duration.ofSeconds(1))
+                    .setTotalTimeout(java.time.Duration.ofSeconds(1))
                     .setMaxAttempts(1)
                     .build())
             .build();

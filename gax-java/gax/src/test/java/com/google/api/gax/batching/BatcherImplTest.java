@@ -80,7 +80,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-import org.threeten.bp.Duration;
 
 @RunWith(JUnit4.class)
 public class BatcherImplTest {
@@ -96,7 +95,7 @@ public class BatcherImplTest {
       BatchingSettings.newBuilder()
           .setElementCountThreshold(1000L)
           .setRequestByteThreshold(1000L)
-          .setDelayThreshold(Duration.ofSeconds(1000))
+          .setDelayThresholdDuration(java.time.Duration.ofSeconds(1000))
           .build();
 
   @After
@@ -375,7 +374,7 @@ public class BatcherImplTest {
         BatchingSettings.newBuilder()
             .setElementCountThreshold(null)
             .setRequestByteThreshold(null)
-            .setDelayThreshold(null)
+            .setDelayThresholdDuration(null)
             .build();
     underTest = createDefaultBatcherImpl(settings, null);
     Future<Integer> result = underTest.add(2);
@@ -387,7 +386,10 @@ public class BatcherImplTest {
   @Test
   public void testWhenDelayThresholdExceeds() throws Exception {
     BatchingSettings settings =
-        batchingSettings.toBuilder().setDelayThreshold(Duration.ofMillis(100)).build();
+        batchingSettings
+            .toBuilder()
+            .setDelayThresholdDuration(java.time.Duration.ofMillis(100))
+            .build();
     underTest = createDefaultBatcherImpl(settings, null);
     Future<Integer> result = underTest.add(6);
     assertThat(result.isDone()).isFalse();
@@ -418,7 +420,10 @@ public class BatcherImplTest {
           }
         };
     BatchingSettings settings =
-        batchingSettings.toBuilder().setDelayThreshold(Duration.ofMillis(50)).build();
+        batchingSettings
+            .toBuilder()
+            .setDelayThresholdDuration(java.time.Duration.ofMillis(50))
+            .build();
 
     try (final BatcherImpl<Integer, Integer, LabeledIntList, List<Integer>> batcherTest =
         new BatcherImpl<>(SQUARER_BATCHING_DESC_V2, callable, labeledIntList, settings, EXECUTOR)) {
@@ -462,7 +467,10 @@ public class BatcherImplTest {
   public void testPushCurrentBatchRunnable() throws Exception {
     long DELAY_TIME = 50L;
     BatchingSettings settings =
-        batchingSettings.toBuilder().setDelayThreshold(Duration.ofMillis(DELAY_TIME)).build();
+        batchingSettings
+            .toBuilder()
+            .setDelayThresholdDuration(java.time.Duration.ofMillis(DELAY_TIME))
+            .build();
     BatcherImpl<Integer, Integer, LabeledIntList, List<Integer>> batcher =
         createDefaultBatcherImpl(settings, null);
 
@@ -1025,7 +1033,7 @@ public class BatcherImplTest {
     Object prototype = new Object();
     BatchingSettings batchingSettings =
         BatchingSettings.newBuilder()
-            .setDelayThreshold(Duration.ofSeconds(1))
+            .setDelayThresholdDuration(java.time.Duration.ofSeconds(1))
             .setElementCountThreshold(100L)
             .setRequestByteThreshold(100L)
             .setFlowControlSettings(FlowControlSettings.getDefaultInstance())

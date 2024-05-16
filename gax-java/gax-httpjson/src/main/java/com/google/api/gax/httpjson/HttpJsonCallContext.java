@@ -29,8 +29,14 @@
  */
 package com.google.api.gax.httpjson;
 
+import static com.google.api.gax.util.TimeConversionUtils.toJavaTimeDuration;
+import static com.google.api.gax.util.TimeConversionUtils.toJavaTimeInstant;
+import static com.google.api.gax.util.TimeConversionUtils.toThreetenDuration;
+import static com.google.api.gax.util.TimeConversionUtils.toThreetenInstant;
+
 import com.google.api.core.BetaApi;
 import com.google.api.core.InternalApi;
+import com.google.api.core.ObsoleteApi;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.ApiCallContext;
 import com.google.api.gax.rpc.ApiExceptionFactory;
@@ -53,8 +59,6 @@ import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.threeten.bp.Duration;
-import org.threeten.bp.Instant;
 
 /**
  * HttpJsonCallContext encapsulates context data used to make an http-json call.
@@ -69,9 +73,9 @@ public final class HttpJsonCallContext implements ApiCallContext {
       HttpJsonStatusCode.of(StatusCode.Code.UNAUTHENTICATED);
   private final HttpJsonChannel channel;
   private final HttpJsonCallOptions callOptions;
-  @Nullable private final Duration timeout;
-  @Nullable private final Duration streamWaitTimeout;
-  @Nullable private final Duration streamIdleTimeout;
+  @Nullable private final java.time.Duration timeout;
+  @Nullable private final java.time.Duration streamWaitTimeout;
+  @Nullable private final java.time.Duration streamIdleTimeout;
   private final ImmutableMap<String, List<String>> extraHeaders;
   private final ApiCallContextOptions options;
   private final ApiTracer tracer;
@@ -113,9 +117,9 @@ public final class HttpJsonCallContext implements ApiCallContext {
   private HttpJsonCallContext(
       HttpJsonChannel channel,
       HttpJsonCallOptions callOptions,
-      Duration timeout,
-      Duration streamWaitTimeout,
-      Duration streamIdleTimeout,
+      java.time.Duration timeout,
+      java.time.Duration streamWaitTimeout,
+      java.time.Duration streamIdleTimeout,
       ImmutableMap<String, List<String>> extraHeaders,
       ApiCallContextOptions options,
       ApiTracer tracer,
@@ -181,17 +185,17 @@ public final class HttpJsonCallContext implements ApiCallContext {
     // Do deep merge of callOptions
     HttpJsonCallOptions newCallOptions = callOptions.merge(httpJsonCallContext.callOptions);
 
-    Duration newTimeout = httpJsonCallContext.timeout;
+    java.time.Duration newTimeout = httpJsonCallContext.timeout;
     if (newTimeout == null) {
       newTimeout = this.timeout;
     }
 
-    Duration newStreamWaitTimeout = httpJsonCallContext.streamWaitTimeout;
+    java.time.Duration newStreamWaitTimeout = httpJsonCallContext.streamWaitTimeout;
     if (newStreamWaitTimeout == null) {
       newStreamWaitTimeout = streamWaitTimeout;
     }
 
-    Duration newStreamIdleTimeout = httpJsonCallContext.streamIdleTimeout;
+    java.time.Duration newStreamIdleTimeout = httpJsonCallContext.streamIdleTimeout;
     if (newStreamIdleTimeout == null) {
       newStreamIdleTimeout = streamIdleTimeout;
     }
@@ -250,6 +254,16 @@ public final class HttpJsonCallContext implements ApiCallContext {
     return withChannel(transportChannel.getChannel());
   }
 
+  /**
+   * Overload of {@link #withTimeoutDuration(java.time.Duration)} using {@link
+   * org.threeten.bp.Duration}
+   */
+  @Override
+  @ObsoleteApi("Use withTimeoutDuration(java.time.Duration) instead")
+  public HttpJsonCallContext withTimeout(org.threeten.bp.Duration timeout) {
+    return withTimeoutDuration(toJavaTimeDuration(timeout));
+  }
+
   @Override
   public HttpJsonCallContext withEndpointContext(EndpointContext endpointContext) {
     Preconditions.checkNotNull(endpointContext);
@@ -268,7 +282,7 @@ public final class HttpJsonCallContext implements ApiCallContext {
   }
 
   @Override
-  public HttpJsonCallContext withTimeout(Duration timeout) {
+  public HttpJsonCallContext withTimeoutDuration(java.time.Duration timeout) {
     // Default RetrySettings use 0 for RPC timeout. Treat that as disabled timeouts.
     if (timeout != null && (timeout.isZero() || timeout.isNegative())) {
       timeout = null;
@@ -293,17 +307,37 @@ public final class HttpJsonCallContext implements ApiCallContext {
         this.endpointContext);
   }
 
+  /** Backport of {@link #getTimeoutDuration()} */
   @Nullable
   @Override
-  public Duration getTimeout() {
+  @ObsoleteApi("Use getTimeoutDuration instead")
+  public org.threeten.bp.Duration getTimeout() {
+    return toThreetenDuration(getTimeoutDuration());
+  }
+
+  @Nullable
+  @Override
+  public java.time.Duration getTimeoutDuration() {
     return timeout;
   }
 
+  /**
+   * Overload of {@link #withStreamWaitTimeoutDuration(java.time.Duration)} using {@link
+   * org.threeten.bp.Duration}
+   */
   @Override
-  public HttpJsonCallContext withStreamWaitTimeout(@Nullable Duration streamWaitTimeout) {
+  @ObsoleteApi("Use withStreamWaitTimeoutDuration(java.time.Duration) instead")
+  public HttpJsonCallContext withStreamWaitTimeout(
+      @Nullable org.threeten.bp.Duration streamWaitTimeout) {
+    return withStreamWaitTimeoutDuration(toJavaTimeDuration(streamWaitTimeout));
+  }
+
+  @Override
+  public HttpJsonCallContext withStreamWaitTimeoutDuration(
+      @Nullable java.time.Duration streamWaitTimeout) {
     if (streamWaitTimeout != null) {
       Preconditions.checkArgument(
-          streamWaitTimeout.compareTo(Duration.ZERO) >= 0, "Invalid timeout: < 0 s");
+          streamWaitTimeout.compareTo(java.time.Duration.ZERO) >= 0, "Invalid timeout: < 0 s");
     }
 
     return new HttpJsonCallContext(
@@ -320,22 +354,42 @@ public final class HttpJsonCallContext implements ApiCallContext {
         this.endpointContext);
   }
 
+  /** Backport of {@link #getStreamWaitTimeoutDuration()} */
+  @Override
+  @Nullable
+  @ObsoleteApi("Use getStreamWaitTimeoutDuration() instead")
+  public org.threeten.bp.Duration getStreamWaitTimeout() {
+    return toThreetenDuration(getStreamWaitTimeoutDuration());
+  }
+
   /**
    * The stream wait timeout set for this context.
    *
-   * @see ApiCallContext#withStreamWaitTimeout(Duration)
+   * @see ApiCallContext#withStreamWaitTimeoutDuration(java.time.Duration)
    */
   @Override
   @Nullable
-  public Duration getStreamWaitTimeout() {
+  public java.time.Duration getStreamWaitTimeoutDuration() {
     return streamWaitTimeout;
   }
 
+  /**
+   * Overload of {@link #withStreamIdleTimeoutDuration(java.time.Duration)} using {@link
+   * org.threeten.bp.Duration}
+   */
   @Override
-  public HttpJsonCallContext withStreamIdleTimeout(@Nullable Duration streamIdleTimeout) {
+  @ObsoleteApi("Use withStreamIdleTimeoutDuration(java.time.Duration) instead")
+  public HttpJsonCallContext withStreamIdleTimeout(
+      @Nullable org.threeten.bp.Duration streamIdleTimeout) {
+    return withStreamIdleTimeoutDuration(toJavaTimeDuration(streamIdleTimeout));
+  }
+
+  @Override
+  public HttpJsonCallContext withStreamIdleTimeoutDuration(
+      @Nullable java.time.Duration streamIdleTimeout) {
     if (streamIdleTimeout != null) {
       Preconditions.checkArgument(
-          streamIdleTimeout.compareTo(Duration.ZERO) >= 0, "Invalid timeout: < 0 s");
+          streamIdleTimeout.compareTo(java.time.Duration.ZERO) >= 0, "Invalid timeout: < 0 s");
     }
 
     return new HttpJsonCallContext(
@@ -352,14 +406,22 @@ public final class HttpJsonCallContext implements ApiCallContext {
         this.endpointContext);
   }
 
+  /** Backport of {@link #getStreamIdleTimeoutDuration()} */
+  @Override
+  @Nullable
+  @ObsoleteApi("Use getStreamIdleTimeoutDuration() instead")
+  public org.threeten.bp.Duration getStreamIdleTimeout() {
+    return toThreetenDuration(getStreamIdleTimeoutDuration());
+  }
+
   /**
    * The stream idle timeout set for this context.
    *
-   * @see ApiCallContext#withStreamIdleTimeout(Duration)
+   * @see ApiCallContext#withStreamIdleTimeoutDuration(java.time.Duration)
    */
   @Override
   @Nullable
-  public Duration getStreamIdleTimeout() {
+  public java.time.Duration getStreamIdleTimeoutDuration() {
     return streamIdleTimeout;
   }
 
@@ -446,10 +508,18 @@ public final class HttpJsonCallContext implements ApiCallContext {
     return callOptions;
   }
 
+  /** Backport of {@link #getDeadlineInstant()} */
   @Deprecated
   @Nullable
-  public Instant getDeadline() {
+  @ObsoleteApi("Use getDeadlineInstant() instead")
+  public org.threeten.bp.Instant getDeadline() {
     return getCallOptions() != null ? getCallOptions().getDeadline() : null;
+  }
+
+  @Deprecated
+  @Nullable
+  public java.time.Instant getDeadlineInstant() {
+    return toJavaTimeInstant(getDeadline());
   }
 
   @Deprecated
@@ -530,11 +600,18 @@ public final class HttpJsonCallContext implements ApiCallContext {
         this.endpointContext);
   }
 
+  /** Overload of {@link #withDeadline(java.time.Instant)} using {@link org.threeten.bp.Instant} */
   @Deprecated
-  public HttpJsonCallContext withDeadline(Instant newDeadline) {
+  @ObsoleteApi("Use withDeadline(java.time.Instant) instead")
+  public HttpJsonCallContext withDeadline(org.threeten.bp.Instant newDeadline) {
     HttpJsonCallOptions.Builder builder =
         callOptions != null ? callOptions.toBuilder() : HttpJsonCallOptions.newBuilder();
     return withCallOptions(builder.setDeadline(newDeadline).build());
+  }
+
+  @Deprecated
+  public HttpJsonCallContext withDeadline(java.time.Instant newDeadline) {
+    return withDeadline(toThreetenInstant(newDeadline));
   }
 
   @Nonnull

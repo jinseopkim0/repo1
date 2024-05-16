@@ -57,7 +57,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mockito;
-import org.threeten.bp.Duration;
 
 @RunWith(JUnit4.class)
 public class HttpJsonDirectCallableTest {
@@ -129,7 +128,7 @@ public class HttpJsonDirectCallableTest {
     defaultCallContext =
         HttpJsonCallContext.createDefault()
             .withChannel(channel)
-            .withTimeout(Duration.ofSeconds(30))
+            .withTimeoutDuration(java.time.Duration.ofSeconds(30))
             .withEndpointContext(endpointContext);
   }
 
@@ -335,7 +334,8 @@ public class HttpJsonDirectCallableTest {
     HttpJsonDirectCallable<Field, Field> callable =
         new HttpJsonDirectCallable<>(FAKE_METHOD_DESCRIPTOR);
 
-    HttpJsonCallContext callContext = defaultCallContext.withTimeout(Duration.ofSeconds(3));
+    HttpJsonCallContext callContext =
+        defaultCallContext.withTimeoutDuration(java.time.Duration.ofSeconds(3));
 
     Field response = createTestMessage(10);
     MOCK_SERVICE.addResponse(response, java.time.Duration.ofSeconds(5));

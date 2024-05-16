@@ -67,7 +67,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
-import org.threeten.bp.Duration;
 
 @RunWith(JUnit4.class)
 public class TimeoutTest {
@@ -78,9 +77,12 @@ public class TimeoutTest {
   private static final ImmutableSet<StatusCode.Code> emptyRetryCodes = ImmutableSet.of();
   private static final ImmutableSet<StatusCode.Code> retryUnknownCode =
       ImmutableSet.of(StatusCode.Code.UNKNOWN);
-  private static final Duration totalTimeout = Duration.ofDays(DEADLINE_IN_DAYS);
-  private static final Duration maxRpcTimeout = Duration.ofMinutes(DEADLINE_IN_MINUTES);
-  private static final Duration initialRpcTimeout = Duration.ofSeconds(DEADLINE_IN_SECONDS);
+  private static final java.time.Duration totalTimeout =
+      java.time.Duration.ofDays(DEADLINE_IN_DAYS);
+  private static final java.time.Duration maxRpcTimeout =
+      java.time.Duration.ofMinutes(DEADLINE_IN_MINUTES);
+  private static final java.time.Duration initialRpcTimeout =
+      java.time.Duration.ofSeconds(DEADLINE_IN_SECONDS);
   private static GrpcCallContext defaultCallContext;
 
   @Rule public MockitoRule mockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
@@ -102,9 +104,9 @@ public class TimeoutTest {
     RetrySettings retrySettings =
         RetrySettings.newBuilder()
             .setTotalTimeout(totalTimeout)
-            .setInitialRetryDelay(Duration.ZERO)
+            .setInitialRetryDelay(java.time.Duration.ZERO)
             .setRetryDelayMultiplier(1.0)
-            .setMaxRetryDelay(Duration.ZERO)
+            .setMaxRetryDelay(java.time.Duration.ZERO)
             .setMaxAttempts(1)
             .setJittered(true)
             .setInitialRpcTimeout(initialRpcTimeout)
@@ -128,16 +130,16 @@ public class TimeoutTest {
     RetrySettings retrySettings =
         RetrySettings.newBuilder()
             .setTotalTimeout(totalTimeout)
-            .setInitialRetryDelay(Duration.ZERO)
+            .setInitialRetryDelay(java.time.Duration.ZERO)
             .setRetryDelayMultiplier(1.0)
-            .setMaxRetryDelay(Duration.ZERO)
+            .setMaxRetryDelay(java.time.Duration.ZERO)
             .setMaxAttempts(1)
             .setJittered(true)
             .setInitialRpcTimeout(initialRpcTimeout)
             .setRpcTimeoutMultiplier(1.0)
             .setMaxRpcTimeout(maxRpcTimeout)
             .build();
-    Duration newTimeout = Duration.ofSeconds(5);
+    java.time.Duration newTimeout = java.time.Duration.ofSeconds(5);
     RetrySettings contextRetrySettings =
         retrySettings
             .toBuilder()
@@ -168,9 +170,9 @@ public class TimeoutTest {
     RetrySettings retrySettings =
         RetrySettings.newBuilder()
             .setTotalTimeout(totalTimeout)
-            .setInitialRetryDelay(Duration.ZERO)
+            .setInitialRetryDelay(java.time.Duration.ZERO)
             .setRetryDelayMultiplier(1.0)
-            .setMaxRetryDelay(Duration.ZERO)
+            .setMaxRetryDelay(java.time.Duration.ZERO)
             .setMaxAttempts(1)
             .setJittered(true)
             .setRpcTimeoutMultiplier(1.0)
@@ -193,9 +195,9 @@ public class TimeoutTest {
     RetrySettings retrySettings =
         RetrySettings.newBuilder()
             .setTotalTimeout(totalTimeout)
-            .setInitialRetryDelay(Duration.ZERO)
+            .setInitialRetryDelay(java.time.Duration.ZERO)
             .setRetryDelayMultiplier(1.0)
-            .setMaxRetryDelay(Duration.ZERO)
+            .setMaxRetryDelay(java.time.Duration.ZERO)
             .setMaxAttempts(1)
             .setJittered(true)
             .setRpcTimeoutMultiplier(1.0)
@@ -217,9 +219,9 @@ public class TimeoutTest {
     RetrySettings retrySettings =
         RetrySettings.newBuilder()
             .setTotalTimeout(totalTimeout)
-            .setInitialRetryDelay(Duration.ZERO)
+            .setInitialRetryDelay(java.time.Duration.ZERO)
             .setRetryDelayMultiplier(1.0)
-            .setMaxRetryDelay(Duration.ZERO)
+            .setMaxRetryDelay(java.time.Duration.ZERO)
             .setMaxAttempts(1)
             .setJittered(true)
             .setInitialRpcTimeout(initialRpcTimeout)
@@ -243,16 +245,16 @@ public class TimeoutTest {
     RetrySettings retrySettings =
         RetrySettings.newBuilder()
             .setTotalTimeout(totalTimeout)
-            .setInitialRetryDelay(Duration.ZERO)
+            .setInitialRetryDelay(java.time.Duration.ZERO)
             .setRetryDelayMultiplier(1.0)
-            .setMaxRetryDelay(Duration.ZERO)
+            .setMaxRetryDelay(java.time.Duration.ZERO)
             .setMaxAttempts(1)
             .setJittered(true)
             .setInitialRpcTimeout(initialRpcTimeout)
             .setRpcTimeoutMultiplier(1.0)
             .setMaxRpcTimeout(maxRpcTimeout)
             .build();
-    Duration newTimeout = Duration.ofSeconds(5);
+    java.time.Duration newTimeout = java.time.Duration.ofSeconds(5);
     RetrySettings contextRetrySettings =
         retrySettings
             .toBuilder()
@@ -283,9 +285,9 @@ public class TimeoutTest {
     RetrySettings retrySettings =
         RetrySettings.newBuilder()
             .setTotalTimeout(totalTimeout)
-            .setInitialRetryDelay(Duration.ZERO)
+            .setInitialRetryDelay(java.time.Duration.ZERO)
             .setRetryDelayMultiplier(1.0)
-            .setMaxRetryDelay(Duration.ZERO)
+            .setMaxRetryDelay(java.time.Duration.ZERO)
             .setMaxAttempts(1)
             .setJittered(true)
             .setRpcTimeoutMultiplier(1.0)
@@ -308,9 +310,9 @@ public class TimeoutTest {
     RetrySettings retrySettings =
         RetrySettings.newBuilder()
             .setTotalTimeout(totalTimeout)
-            .setInitialRetryDelay(Duration.ZERO)
+            .setInitialRetryDelay(java.time.Duration.ZERO)
             .setRetryDelayMultiplier(1.0)
-            .setMaxRetryDelay(Duration.ZERO)
+            .setMaxRetryDelay(java.time.Duration.ZERO)
             .setMaxAttempts(1)
             .setJittered(true)
             .setRpcTimeoutMultiplier(1.0)
@@ -454,7 +456,7 @@ public class TimeoutTest {
    * codebase must continue to support Java 7 and up, in alignment with client libraries that depend
    * on gax-java.
    */
-  private int toSecondsPart(Duration duration) {
+  private int toSecondsPart(java.time.Duration duration) {
     return (int)
         (duration.getSeconds()
             - TimeUnit.MINUTES.toSeconds(1)

@@ -29,8 +29,10 @@
  */
 package com.google.api.gax.tracing;
 
+import static com.google.api.gax.util.TimeConversionUtils.toJavaTimeDuration;
+
 import com.google.api.core.InternalApi;
-import org.threeten.bp.Duration;
+import com.google.api.core.ObsoleteApi;
 
 /**
  * A base implementation of {@link ApiTracer} that does nothing. With the deprecation of Java 7
@@ -104,8 +106,15 @@ public class BaseApiTracer implements ApiTracer {
   }
 
   @Override
-  public void attemptFailed(Throwable error, Duration delay) {
+  public void attemptFailedDuration(Throwable error, java.time.Duration delay) {
     // noop
+  }
+
+  /** Backport of {@link #attemptFailedDuration(Throwable, java.time.Duration)} */
+  @Override
+  @ObsoleteApi("Use attemptFailed(Throwable, java.time.Duration) instead")
+  public void attemptFailed(Throwable error, org.threeten.bp.Duration delay) {
+    attemptFailedDuration(error, toJavaTimeDuration(delay));
   }
 
   @Override

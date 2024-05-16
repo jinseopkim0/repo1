@@ -54,7 +54,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mockito;
-import org.threeten.bp.Duration;
 
 @RunWith(JUnit4.class)
 public class HttpJsonClientInterceptorTest {
@@ -194,7 +193,7 @@ public class HttpJsonClientInterceptorTest {
     HttpJsonCallContext callContext =
         HttpJsonCallContext.createDefault()
             .withChannel(channel)
-            .withTimeout(Duration.ofSeconds(30))
+            .withTimeoutDuration(java.time.Duration.ofSeconds(30))
             .withEndpointContext(endpointContext);
 
     Field request;

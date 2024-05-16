@@ -29,12 +29,16 @@
  */
 package com.google.api.gax.httpjson;
 
+import static com.google.api.gax.util.TimeConversionUtils.toJavaTimeDuration;
+import static com.google.api.gax.util.TimeConversionUtils.toJavaTimeInstant;
+import static com.google.api.gax.util.TimeConversionUtils.toThreetenDuration;
+import static com.google.api.gax.util.TimeConversionUtils.toThreetenInstant;
+
+import com.google.api.core.ObsoleteApi;
 import com.google.auth.Credentials;
 import com.google.auto.value.AutoValue;
 import com.google.protobuf.TypeRegistry;
-import java.time.Duration;
 import javax.annotation.Nullable;
-import org.threeten.bp.Instant;
 
 /** Options for an http-json call, including deadline and credentials. */
 @AutoValue
@@ -42,10 +46,22 @@ public abstract class HttpJsonCallOptions {
   public static final HttpJsonCallOptions DEFAULT = newBuilder().build();
 
   @Nullable
-  public abstract Duration getTimeout();
+  @ObsoleteApi("Use getTimeoutDuration() instead")
+  public abstract org.threeten.bp.Duration getTimeout();
 
   @Nullable
-  public abstract Instant getDeadline();
+  public java.time.Duration getTimeoutDuration() {
+    return toJavaTimeDuration(getTimeout());
+  }
+
+  @Nullable
+  @ObsoleteApi("Use getDeadlineInstant() instead")
+  public abstract org.threeten.bp.Instant getDeadline();
+
+  @Nullable
+  public final java.time.Instant getDeadlineInstant() {
+    return toJavaTimeInstant(getDeadline());
+  }
 
   @Nullable
   public abstract Credentials getCredentials();
@@ -66,15 +82,15 @@ public abstract class HttpJsonCallOptions {
 
     Builder builder = this.toBuilder();
 
-    Instant newDeadline = inputOptions.getDeadline();
+    java.time.Instant newDeadline = inputOptions.getDeadlineInstant();
     if (newDeadline != null) {
-      builder.setDeadline(newDeadline);
+      builder.setDeadlineInstant(newDeadline);
     }
 
     if (inputOptions.getTimeout() != null) {
-      Duration newTimeout = java.time.Duration.ofMillis(inputOptions.getTimeout().toMillis());
+      java.time.Duration newTimeout = inputOptions.getTimeoutDuration();
       if (newTimeout != null) {
-        builder.setTimeout(newTimeout);
+        builder.setTimeoutDuration(newTimeout);
       }
     }
 
@@ -93,9 +109,21 @@ public abstract class HttpJsonCallOptions {
 
   @AutoValue.Builder
   public abstract static class Builder {
-    public abstract Builder setTimeout(java.time.Duration value);
+    /** Backport of {@link #setTimeoutDuration(java.time.Duration)} */
+    @ObsoleteApi("Use setTimeoutDuration(java.time.Duration) instead")
+    public abstract Builder setTimeout(org.threeten.bp.Duration value);
 
-    public abstract Builder setDeadline(Instant value);
+    public Builder setTimeoutDuration(java.time.Duration value) {
+      return setTimeout(toThreetenDuration(value));
+    }
+
+    /** Backport of {@link #setDeadlineInstant(java.time.Instant)} */
+    @ObsoleteApi("Use setDeadlineInstant(java.time.Instant) instead")
+    public abstract Builder setDeadline(org.threeten.bp.Instant value);
+
+    public final Builder setDeadlineInstant(java.time.Instant value) {
+      return setDeadline(toThreetenInstant(value));
+    }
 
     public abstract Builder setCredentials(Credentials value);
 

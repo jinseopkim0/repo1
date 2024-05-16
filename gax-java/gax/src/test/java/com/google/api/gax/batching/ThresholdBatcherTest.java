@@ -29,6 +29,7 @@
  */
 package com.google.api.gax.batching;
 
+import static com.google.api.gax.util.TimeConversionTestUtils.testDurationMethod;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.api.core.ApiFutures;
@@ -36,13 +37,13 @@ import com.google.api.gax.batching.FlowController.FlowControlException;
 import com.google.api.gax.batching.FlowController.LimitExceededBehavior;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import org.junit.Assert;
 import org.junit.Test;
-import org.threeten.bp.Duration;
 
 public class ThresholdBatcherTest {
 
@@ -123,6 +124,7 @@ public class ThresholdBatcherTest {
   }
 
   private static class SimpleBatchMerger implements BatchMerger<SimpleBatch> {
+
     @Override
     public void merge(SimpleBatch batch, SimpleBatch newBatch) {
       batch.merge(newBatch);
@@ -134,7 +136,7 @@ public class ThresholdBatcherTest {
     return ThresholdBatcher.<SimpleBatch>newBuilder()
         .setThresholds(BatchingThresholds.<SimpleBatch>create(100))
         .setExecutor(EXECUTOR)
-        .setMaxDelay(Duration.ofMillis(10000))
+        .setMaxDelayDuration(java.time.Duration.ofMillis(10000))
         .setReceiver(receiver)
         .setFlowController(ThresholdBatcherTest.<SimpleBatch>getDisabledBatchingFlowController())
         .setBatchMerger(new SimpleBatchMerger());
@@ -194,7 +196,9 @@ public class ThresholdBatcherTest {
     AccumulatingBatchReceiver<SimpleBatch> receiver =
         new AccumulatingBatchReceiver<>(ApiFutures.<Void>immediateFuture(null));
     ThresholdBatcher<SimpleBatch> batcher =
-        createSimpleBatcherBuidler(receiver).setMaxDelay(Duration.ofMillis(100)).build();
+        createSimpleBatcherBuidler(receiver)
+            .setMaxDelayDuration(java.time.Duration.ofMillis(100))
+            .build();
 
     batcher.add(SimpleBatch.fromInteger(3));
     batcher.add(SimpleBatch.fromInteger(5));
@@ -220,7 +224,7 @@ public class ThresholdBatcherTest {
       ThresholdBatcher.<SimpleBatch>newBuilder()
           .setThresholds(BatchingThresholds.<SimpleBatch>create(100))
           .setExecutor(EXECUTOR)
-          .setMaxDelay(Duration.ofMillis(10000))
+          .setMaxDelayDuration(java.time.Duration.ofMillis(10000))
           .setReceiver(
               new AccumulatingBatchReceiver<SimpleBatch>(ApiFutures.<Void>immediateFuture(null)))
           .setBatchMerger(new SimpleBatchMerger())
@@ -356,5 +360,19 @@ public class ThresholdBatcherTest {
         .isEqualTo(trackedFlowController.getElementsReleased());
     assertThat(trackedFlowController.getBytesReserved())
         .isEqualTo(trackedFlowController.getBytesReleased());
+  }
+
+  @Test
+  public void testMaxDelay() {
+    AccumulatingBatchReceiver<SimpleBatch> receiver =
+        new AccumulatingBatchReceiver<>(ApiFutures.<Void>immediateFuture(null));
+    final ThresholdBatcher.Builder builder =
+        createSimpleBatcherBuidler(receiver).setThresholds(Collections.emptyList());
+    testDurationMethod(
+        123l,
+        jt -> builder.setMaxDelayDuration(jt).build(),
+        tt -> builder.setMaxDelay(tt).build(),
+        o -> o.getMaxDelayDuration(),
+        o -> o.getMaxDelay());
   }
 }

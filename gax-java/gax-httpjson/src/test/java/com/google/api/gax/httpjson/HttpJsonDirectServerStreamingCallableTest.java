@@ -68,7 +68,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mockito;
-import org.threeten.bp.Duration;
 
 @RunWith(JUnit4.class)
 public class HttpJsonDirectServerStreamingCallableTest {
@@ -91,10 +90,10 @@ public class HttpJsonDirectServerStreamingCallableTest {
 
   @Before
   public void initialize() throws IOException {
-    initialize(Duration.ofSeconds(30));
+    initialize(java.time.Duration.ofSeconds(30));
   }
 
-  public void initialize(Duration timeout) throws IOException {
+  public void initialize(java.time.Duration timeout) throws IOException {
     this.methodServerStreamingRecognize =
         ApiMethodDescriptor.<Color, Money>newBuilder()
             .setFullMethodName("google.cloud.v1.Fake/ServerStreamingRecognize")
@@ -150,7 +149,7 @@ public class HttpJsonDirectServerStreamingCallableTest {
             .setTransportChannel(HttpJsonTransportChannel.create(channel))
             .setDefaultCallContext(
                 HttpJsonCallContext.of(channel, HttpJsonCallOptions.DEFAULT)
-                    .withTimeout(timeout)
+                    .withTimeoutDuration(timeout)
                     .withEndpointContext(endpointContext))
             .build();
 
@@ -335,7 +334,7 @@ public class HttpJsonDirectServerStreamingCallableTest {
   @Test
   public void testDeadlineExceededServerStreaming() throws InterruptedException, IOException {
     // set a low timeout to trigger deadline-exceeded sooner
-    initialize(Duration.ofSeconds(1));
+    initialize(java.time.Duration.ofSeconds(1));
 
     mockService.addResponse(
         new Money[] {DEFAULT_RESPONSE, DEFAULTER_RESPONSE}, java.time.Duration.ofSeconds(30));
