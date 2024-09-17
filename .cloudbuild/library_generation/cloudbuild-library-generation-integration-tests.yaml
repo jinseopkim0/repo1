@@ -12,28 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This is a tentative Cloud Build workflow to replace the existing integration
+# tests setup in GitHub Actions
 timeout: 7200s # 2 hours
 substitutions:
-  _IMAGE_NAME: "gcr.io/cloud-devrel-public-resources/java-library-generation"
-  _GAPIC_GENERATOR_JAVA_VERSION: '2.45.1-SNAPSHOT' # {x-version-update:gapic-generator-java:current}
-  _SHA_IMAGE_ID: "${_IMAGE_NAME}:${COMMIT_SHA}"
-  _LATEST_IMAGE_ID: "${_IMAGE_NAME}:latest"
-  _VERSIONED_IMAGE_ID: "${_IMAGE_NAME}:${_GAPIC_GENERATOR_JAVA_VERSION}"
+  _IMAGE_NAME: "hermetic-build"
 steps:
   # Library generation build
   - name: gcr.io/cloud-builders/docker
     args: [
       "build",
-      "-t", "${_SHA_IMAGE_ID}",
-      "-t", "${_LATEST_IMAGE_ID}",
-      "-t", "${_VERSIONED_IMAGE_ID}",
+      "-t", "${_IMAGE_NAME}",
       "--file", ".cloudbuild/library_generation/library_generation.Dockerfile", "."]
-    id: library-generation-build
+    id: library-generation-image-build
     env:
     - 'DOCKER_BUILDKIT=1'
     waitFor: ["-"]
-
-images:
-  - ${_SHA_IMAGE_ID}
-  - ${_LATEST_IMAGE_ID}
-  - ${_VERSIONED_IMAGE_ID}
+  # Python scripts compilation
+  - name: python
+    args: [ "python", "-m", "pip", "install", "library_generation" ]
+    id: library-generation-python-compile
+    waitFor: ["library-generation-image-build"]
+  # Python integration tests execution
+  - name: python
+    args: [ "python", "-m", "unittest",
+            "library_generation/test/integration_tests.py" ]
+    id: library-generation-python-compile
+    waitFor: ["library-generation-python-compile"]
