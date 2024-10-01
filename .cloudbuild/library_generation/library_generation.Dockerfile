@@ -14,7 +14,10 @@
 
 # install gapic-generator-java in a separate layer so we don't overload the image
 # with the transferred source code and jars
-FROM gcr.io/cloud-devrel-public-resources/java21 AS ggj-build
+FROM us-docker.pkg.dev/artifact-foundry-prod/docker-3p-trusted/maven@sha256:2cb7c73ba2fd0f7ae64cfabd99180030ec85841a1197b4ae821d21836cb0aa3b AS ggj-build
+
+# If GOOGLE_APPLICATION_CREDENTIALS is passed in docker build command use it, if not leave it unset to support GCE Metadata in CI builds
+ARG GOOGLE_APPLICATION_CREDENTIALS
 
 WORKDIR /sdk-platform-java
 COPY . .
@@ -27,10 +30,7 @@ RUN cp "/root/.m2/repository/com/google/api/gapic-generator-java/${DOCKER_GAPIC_
   "./gapic-generator-java.jar"
 
 # build from the root of this repo:
-FROM gcr.io/cloud-devrel-public-resources/python
-
-SHELL [ "/bin/bash", "-c" ]
-
+FROM us-docker.pkg.dev/artifact-foundry-prod/docker-3p-trusted/python@sha256:24680ddf8422899b24756d62b31eb5de782fbb42e9c2bb1c70f1f55fcf891721
 
 ARG OWLBOT_CLI_COMMITTISH=ac84fa5c423a0069bbce3d2d869c9730c8fdf550
 ARG PROTOC_VERSION=25.5
@@ -39,9 +39,7 @@ ENV HOME=/home
 ENV OS_ARCHITECTURE="linux-x86_64"
 
 # install OS tools
-RUN apt-get update && apt-get install -y \
-	unzip openjdk-17-jdk rsync maven jq \
-	&& apt-get clean
+RUN apk update && apk add bash curl git jq maven npm rsync unzip
 
 # copy source code
 COPY library_generation /src
@@ -70,15 +68,10 @@ ENV DOCKER_GRPC_VERSION="${GRPC_VERSION}"
 COPY --from=ggj-build "/sdk-platform-java/gapic-generator-java.jar" "${HOME}/.library_generation/gapic-generator-java.jar"
 RUN chmod 755 "${HOME}/.library_generation/gapic-generator-java.jar"
 
-#  use python 3.11 (the base image has several python versions; here we define the default one)
-RUN rm $(which python3)
-RUN ln -s $(which python3.11) /usr/local/bin/python
-RUN ln -s $(which python3.11) /usr/local/bin/python3
 RUN python -m pip install --upgrade pip
-
 # install main scripts as a python package
 WORKDIR /src
-RUN python -m pip install -r requirements.txt
+RUN python -m pip install --require-hashes -r requirements.txt
 RUN python -m pip install .
 
 # Install nvm with node and npm
