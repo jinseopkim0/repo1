@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.46.2](https://github.com/googleapis/sdk-platform-java/compare/v2.46.1...v2.46.2) (2024-10-02)
+
+
+### Dependencies
+
+* update dependency com.google.guava:guava to v33.3.1-jre ([#3228](https://github.com/googleapis/sdk-platform-java/issues/3228)) ([4e76207](https://github.com/googleapis/sdk-platform-java/commit/4e762078a59e6fd92453bb5a1395730f6f442524))
+* update grpc dependencies to v1.67.1 ([#3258](https://github.com/googleapis/sdk-platform-java/issues/3258)) ([e08906c](https://github.com/googleapis/sdk-platform-java/commit/e08906cd86146bfa4f62bbc5e507bf04a0956a37))
+
 ## [2.46.1](https://github.com/googleapis/sdk-platform-java/compare/v2.46.0...v2.46.1) (2024-09-25)
 
 
